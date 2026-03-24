@@ -36,3 +36,21 @@ def delete_by_range(start_date: str, end_date: str, collection: str):
     batch.commit()
 
     print(f"Deleted {count} documents")
+
+
+def upload_new_prayer_times(prayer_times, collection):
+    # Firestore max 500 ops per batch
+    BATCH_SIZE = 500
+
+    items = list(prayer_times.items())
+
+    for i in range(0, len(items), BATCH_SIZE):
+        batch = db.batch()
+        chunk = items[i : i + BATCH_SIZE]
+
+        for doc_id, data in chunk:
+            ref = db.collection(collection).document(doc_id)
+            batch.set(ref, data)
+
+        batch.commit()
+        print(f"Committed batch {i // BATCH_SIZE + 1} ({len(chunk)} docs)")
